@@ -1,4 +1,4 @@
-import { createStore } from 'redux';
+import { createStore, combineReducers } from 'redux';
 // import { createStore } from 'react-redux';
 
 const initialState = {
@@ -41,39 +41,66 @@ function accountReducer(state = initialState, action) {
   }
 }
 
-const store = createStore(accountReducer);
+function customerReducer(state = initialStateCustomer, action) {
+  switch (action.type) {
+    case 'customer/createCustomer':
+      return {
+        ...state,
+        fullName: action.payload.fullName,
+        nationalId: action.payload.nationalId,
+        createdAt: action.payload.createdAt,
+      };
 
-console.log('hey hero'); // Log this message firs
+    case 'customer/updateName':
+      return {
+        ...state,
+        fullName: action.payload,
+      };
+    default:
+      return state;
+  }
+}
+
+let rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,
+});
+
+let store = createStore(rootReducer);
 
 const deposit = () => {
   return { type: 'account/deposit', payload: 100000 };
 };
 store.dispatch(deposit()); // Dispatch action
-console.log(store.getState());
 
 store.dispatch({ type: 'account/withdraw', payload: 500 });
-console.log(store.getState());
 
 store.dispatch({
   type: 'account/requestLoan',
   payload: { amount: 1000, purpose: 'buy a car' },
 });
-console.log(store.getState());
 
 store.dispatch({ type: 'account/payLoan' });
-console.log(store.getState());
 
 function createCustomer(fullName, nationalId) {
   return {
     type: 'customer/createCustomer',
-    fullName,
-    nationalId,
-    createAt: new Date().toISOString,
+    payload: {
+      fullName: fullName,
+      nationalId: nationalId,
+      createdAt: new Date().toISOString,
+    },
   };
 }
 
 function updateName(fullName) {
   return {
     type: 'customer/updateName',
+    payload: fullName,
   };
 }
+
+store.dispatch(createCustomer('Vivek', 123123123));
+
+store.dispatch(updateName('Mohit'));
+console.log(store.getState());
