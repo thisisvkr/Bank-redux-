@@ -73,7 +73,10 @@ const deposit = () => {
 };
 store.dispatch(deposit()); // Dispatch action
 
-store.dispatch({ type: 'account/withdraw', payload: 500 });
+function withdraw() {
+  return { type: 'account/withdraw', payload: 500 };
+}
+store.dispatch(withdraw());
 
 store.dispatch({
   type: 'account/requestLoan',
