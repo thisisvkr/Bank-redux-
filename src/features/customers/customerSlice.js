@@ -1,7 +1,7 @@
 const initialStateCustomer = {
   fullName: '',
   nationalId: '',
-  cretedAt: '',
+  createdAt: '',
 };
 
 export default function customerReducer(state = initialStateCustomer, action) {

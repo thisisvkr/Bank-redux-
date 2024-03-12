@@ -2,12 +2,17 @@ const initialState = {
   balance: 0,
   loan: 0,
   loanPurpose: '',
+  isLoading: false,
 };
 
 export default function accountReducer(state = initialState, action) {
   switch (action.type) {
     case 'account/deposit':
-      return { ...state, balance: state.balance + action.payload };
+      return {
+        ...state,
+        balance: state.balance + action.payload,
+        isLoading: false,
+      };
 
     case 'account/withdraw':
       return {
@@ -16,7 +21,7 @@ export default function accountReducer(state = initialState, action) {
       };
 
     case 'account/requestLoan':
-      if (state.loan > 0) return state;
+      if (state.loan < 0) return state;
       return {
         ...state,
         loan: action.payload.amount,
@@ -26,28 +31,55 @@ export default function accountReducer(state = initialState, action) {
       return {
         ...state,
         loan: 0,
-        LoanPurpose: '',
+        loanPurpose: '',
         balance: state.balance - state.loan,
       };
+
+    case 'account/covertingCurrency':
+      return { ...state, isLoading: true };
     default:
       return state;
   }
 }
 
-export const deposit = () => {
-  return { type: 'account/deposit', payload: 100000 };
+export const deposit = (amount, currency) => {
+  if (currency === 'USD') return { type: 'account/deposit', payload: amount };
+
+  // return { type: 'account/withdraw', payload: amount };
+
+  return async function (dispatch, getState) {
+    dispatch({ type: 'account/covertingCurrency' });
+
+    // API call
+    const host = 'api.frankfurter.app';
+    const res = await fetch(
+      `https://${host}/latest?amount=${amount}&from=${currency}&to=USD`
+    );
+    const data = await res.json();
+    console.log(data);
+    const converted = data.rates.USD;
+
+    dispatch({ type: 'account/deposit', payload: converted });
+    // // return action
+  };
 };
 
-export function withdraw() {
-  return { type: 'account/withdraw', payload: 500 };
+export function withdraw(amount) {
+  return { type: 'account/withdraw', payload: amount };
 }
 
-export function requestLoan() {
+export function requestLoan(amount, purpose) {
   return {
     type: 'account/requestLoan',
     payload: {
-      amount: 1000,
-      purpose: 'buy a car',
+      amount,
+      purpose,
     },
+  };
+}
+
+export function payLoan() {
+  return {
+    type: 'account/payLoan',
   };
 }
